@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "manuscript": "The Glass Harbor",
+  "milestones": ["Chapter 1", "Chapter 2", "Chapter 3"],
+  "props": [
+    {
+      "id": "brass-key",
+      "name": "Brass key",
+      "events": [
+        {"milestone": "Chapter 1", "action": "introduced", "owner": "Mara", "location": "Workshop"},
+        {"milestone": "Chapter 2", "action": "transferred", "from_owner": "Mara", "owner": "Ilan", "location": "Docks"},
+        {"milestone": "Chapter 3", "action": "resolved", "note": "Used to open the signal cabinet"}
+      ]
+    }
+  ]
+}
