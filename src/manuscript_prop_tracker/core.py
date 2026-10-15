@@ -60,11 +60,20 @@ def load_tracker(path: Path) -> dict[str, Any]:
     return data
 
 
-def evaluate(data: dict[str, Any], through: str | None = None) -> dict[str, Any]:
+def evaluate(
+    data: dict[str, Any], through: str | None = None, *, compare_from: str | None = None
+) -> dict[str, Any]:
     milestones = data["milestones"]
     if through is not None and through not in milestones:
         raise ValueError(f"unknown milestone: {through}")
     limit = milestones.index(through) if through is not None else len(milestones) - 1
+    if compare_from is not None:
+        if through is None:
+            raise ValueError("comparison requires an explicit through milestone")
+        if compare_from not in milestones:
+            raise ValueError(f"unknown comparison milestone: {compare_from}")
+        if milestones.index(compare_from) > limit:
+            raise ValueError("comparison start must not follow through milestone")
     results = []
     total_issues = 0
     for prop in data["props"]:
@@ -122,13 +131,35 @@ def evaluate(data: dict[str, Any], through: str | None = None) -> dict[str, Any]
                 "issues": issues,
             }
         )
-    return {
+    report = {
         "version": 1,
         "manuscript": data["manuscript"],
         "through": milestones[limit],
         "issue_count": total_issues,
         "props": results,
     }
+    if compare_from is not None:
+        before = evaluate(data, compare_from)
+        prior = {prop["id"]: prop for prop in before["props"]}
+        # Do not identify props whose entire history lies beyond the end boundary.
+        visible = [prop for prop in results if prop["events_in_scope"]]
+        report["props"] = visible
+        changes = []
+        for prop in visible:
+            initial = prior[prop["id"]]
+            fields = ("owner", "location", "status")
+            changes.append(
+                {
+                    "id": prop["id"],
+                    "name": prop["name"],
+                    "before": {key: initial[key] for key in fields},
+                    "after": {key: prop[key] for key in fields},
+                    "changed_fields": [key for key in fields if initial[key] != prop[key]],
+                    "issues": prop["issues"],
+                }
+            )
+        report["comparison"] = {"from": compare_from, "through": through, "props": changes}
+    return report
 
 
 def render_markdown(report: dict[str, Any]) -> str:
@@ -154,4 +185,10 @@ def render_markdown(report: dict[str, Any]) -> str:
         else:
             lines.append("- Issues: none")
         lines.append("")
+    if "comparison" in report:
+        payload = json.dumps(report["comparison"], indent=2, ensure_ascii=False)
+        fence = "~" * (
+            max((len(run) for run in __import__("re").findall(r"~+", payload)), default=2) + 1
+        )
+        lines.extend(["## Milestone comparison", "", f"{fence}json", payload, fence])
     return "\n".join(lines).rstrip() + "\n"
