@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "manuscript-prop-tracker"
-version = "1.0.0"
+version = "1.1.0"
 description = "Track important objects through manuscript milestones and flag continuity breaks."
 readme = "README.md"
 requires-python = ">=3.10"
