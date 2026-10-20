@@ -8,4 +8,4 @@ Install the built wheel into an isolated environment and exercise the documented
 
 ## 1.1.1 regression acceptance
 
-Exercise malformed structured text, report-write errors, concurrent output creation and source immutability. Verify installed wheel and source-distribution imports, run the full suite with the unchanged 90% branch-coverage gate, and exercise the documented commands outside the source tree.
+Exercise malformed structured text, report-write errors, concurrent output creation and source immutability. Verify installed wheel and source-distribution imports, run the full suite with the unchanged 90% combined statement/branch coverage gate, and exercise the documented commands outside the source tree.

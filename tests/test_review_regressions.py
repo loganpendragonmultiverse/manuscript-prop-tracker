@@ -81,3 +81,25 @@ def test_output_created_by_another_writer_is_preserved(tmp_path, monkeypatch, ca
     assert main([str(source), "--output", str(output)]) == 2
     assert output.read_text() == "another writer"
     assert "already exists" in capsys.readouterr().err
+
+
+def test_unbounded_report_preserves_planned_props_without_events():
+    data = tracker()
+    data["props"].append({"id": "planned", "name": "Planned object", "events": []})
+    report = evaluate(data)
+    assert report["props"][-1]["id"] == "planned"
+    assert report["props"][-1]["status"] == "not introduced"
+    assert report["props"][-1]["events_in_scope"] == 0
+
+
+def test_output_link_is_refused_before_opening(tmp_path, monkeypatch, capsys):
+    source = tmp_path / "source.json"
+    source.write_text(json.dumps(tracker()), encoding="utf-8")
+    output = tmp_path / "report.md"
+    real_is_symlink = type(output).is_symlink
+    monkeypatch.setattr(
+        type(output), "is_symlink", lambda path: path == output or real_is_symlink(path)
+    )
+    assert main([str(source), "--output", str(output)]) == 2
+    assert not output.exists()
+    assert "already exists" in capsys.readouterr().err

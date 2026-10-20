@@ -125,7 +125,7 @@ def evaluate(
                 owner = event["owner"]
             if "location" in event:
                 location = event["location"]
-        if not included:
+        if through is not None and not included:
             continue
         total_issues += len(issues)
         results.append(
