@@ -30,3 +30,9 @@ The normal end-boundary report and its continuity warnings remain available alon
 the comparison. No event notes or future-only prop identities appear in comparisons.
 All events at a milestone apply in supplied order; this is a comparison of recorded
 states, not inferred transfers or a chronological explanation. Source files stay unchanged.
+
+## 1.1.1 maintenance
+
+All reports made with `--through` omit props with no event at or before that milestone. Newly visible props compare against an explicit not-introduced state. Prop IDs and names must contain non-whitespace text; malformed events are rejected before reporting.
+
+Report output is created as a new file, refusing existing destinations including dangling symlinks. Filesystem errors return exit status 2. This prevents ordinary overwrite races at the output leaf; it does not promise atomic protection against hostile replacement of parent directories. Source ledgers are never rewritten.

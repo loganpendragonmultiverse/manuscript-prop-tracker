@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.1 - 2026-10-20
+
+- Hide future-only prop identities in every bounded report, including ordinary snapshots.
+- Validate non-empty prop identities and malformed event fields before evaluating them.
+- Create report files exclusively and report invalid text encodings without a traceback.
+- Package all four handoff documents and tracked examples in wheels and source distributions.
+
 ## 1.1.0 - 2026-10-15
 
 - Compare prop owner, location and status at two explicit inclusive milestones.
