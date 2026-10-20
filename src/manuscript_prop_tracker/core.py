@@ -10,7 +10,7 @@ TERMINAL_ACTIONS = {"destroyed", "resolved"}
 
 def load_tracker(path: Path) -> dict[str, Any]:
     data = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(data, dict) or data.get("version") != 1:
+    if not isinstance(data, dict) or type(data.get("version")) is not int or data["version"] != 1:
         raise ValueError("tracker must be a version 1 object")
     if not isinstance(data.get("manuscript"), str) or not data["manuscript"].strip():
         raise ValueError("tracker requires a manuscript name")
@@ -33,8 +33,10 @@ def load_tracker(path: Path) -> dict[str, Any]:
             not isinstance(prop, dict)
             or not isinstance(prop.get("id"), str)
             or not isinstance(prop.get("name"), str)
+            or not prop["id"].strip()
+            or not prop["name"].strip()
         ):
-            raise TypeError("each prop requires string id and name")
+            raise TypeError("each prop requires non-empty string id and name")
         if prop["id"] in prop_ids:
             raise ValueError(f"duplicate prop id: {prop['id']}")
         prop_ids.add(prop["id"])
@@ -43,10 +45,14 @@ def load_tracker(path: Path) -> dict[str, Any]:
             raise TypeError(f"prop {prop['id']} events must be a list")
         previous = -1
         for event in events:
-            if not isinstance(event, dict) or event.get("action") not in ACTIONS:
+            if (
+                not isinstance(event, dict)
+                or not isinstance(event.get("action"), str)
+                or event["action"] not in ACTIONS
+            ):
                 raise ValueError(f"prop {prop['id']} has an invalid event")
             milestone = event.get("milestone")
-            if milestone not in positions:
+            if not isinstance(milestone, str) or milestone not in positions:
                 raise ValueError(f"prop {prop['id']} references an unknown milestone")
             position = positions[milestone]
             if position < previous:
@@ -55,7 +61,7 @@ def load_tracker(path: Path) -> dict[str, Any]:
             for field in ("owner", "from_owner", "location", "note"):
                 if field in event and not isinstance(event[field], str):
                     raise TypeError(f"prop {prop['id']} event field {field} must be text")
-            if event["action"] == "transferred" and not event.get("owner"):
+            if event["action"] == "transferred" and not event.get("owner", "").strip():
                 raise ValueError(f"prop {prop['id']} transfer requires an owner")
     return data
 
@@ -119,6 +125,8 @@ def evaluate(
                 owner = event["owner"]
             if "location" in event:
                 location = event["location"]
+        if not included:
+            continue
         total_issues += len(issues)
         results.append(
             {
@@ -146,7 +154,9 @@ def evaluate(
         report["props"] = visible
         changes = []
         for prop in visible:
-            initial = prior[prop["id"]]
+            initial = prior.get(
+                prop["id"], {"owner": None, "location": None, "status": "not introduced"}
+            )
             fields = ("owner", "location", "status")
             changes.append(
                 {
