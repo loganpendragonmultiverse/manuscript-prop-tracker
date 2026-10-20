@@ -5,7 +5,7 @@
 - Hide future-only prop identities in every bounded report, including ordinary snapshots.
 - Validate non-empty prop identities and malformed event fields before evaluating them.
 - Create report files exclusively and report invalid text encodings without a traceback.
-- Include development and testing instructions in source distributions.
+- Package all four handoff documents and tracked examples in wheels and source distributions.
 
 ## 1.1.0 - 2026-10-15
 
